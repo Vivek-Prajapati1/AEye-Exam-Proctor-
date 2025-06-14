@@ -31,12 +31,10 @@ export const CheatingLogProvider = ({ children }) => {
       const updatedLog = {
         ...prev,
         ...newLog,
-        noFaceCount: Number(newLog.noFaceCount || prev.noFaceCount || 0),
-        multipleFaceCount: Number(newLog.multipleFaceCount || prev.multipleFaceCount || 0),
-        cellPhoneCount: Number(newLog.cellPhoneCount || prev.cellPhoneCount || 0),
-        prohibitedObjectCount: Number(
-          newLog.prohibitedObjectCount || prev.prohibitedObjectCount || 0,
-        ),
+        noFaceCount: Number(newLog.noFaceCount || 0),
+        multipleFaceCount: Number(newLog.multipleFaceCount || 0),
+        cellPhoneCount: Number(newLog.cellPhoneCount || 0),
+        prohibitedObjectCount: Number(newLog.prohibitedObjectCount || 0),
       };
       console.log('Updated cheating log:', updatedLog); // Debug log
       return updatedLog;

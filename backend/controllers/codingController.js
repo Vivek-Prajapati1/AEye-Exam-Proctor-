@@ -1,38 +1,48 @@
 import CodingQuestion from "../models/codingQuestionModel.js";
+import Exam from "../models/examModel.js";
 import asyncHandler from "express-async-handler";
 
 // @desc    Submit a coding answer
 // @route   POST /api/coding/submit
 // @access  Private (Student)
 const submitCodingAnswer = asyncHandler(async (req, res) => {
-  const { questionId, code, language } = req.body;
+  const { examId, code, language } = req.body;
 
-  if (!code || !language || !questionId) {
+  if (!code || !language || !examId) {
     res.status(400);
     throw new Error("Please provide all required fields");
   }
 
-  // Find the existing question
-  const question = await CodingQuestion.findById(questionId);
-  if (!question) {
+  // Find the exam by its examId (UUID)
+  const exam = await Exam.findOne({ examId });
+
+  if (!exam) {
     res.status(404);
-    throw new Error("Question not found");
+    throw new Error("Exam not found");
   }
 
-  // Update the question with the submitted answer
-  question.submittedAnswer = {
+  // Ensure codingQuestion and submittedAnswer exist
+  if (!exam.codingQuestion) {
+    exam.codingQuestion = {};
+  }
+  if (!exam.codingQuestion.submittedAnswer) {
+    exam.codingQuestion.submittedAnswer = {};
+  }
+
+  // Update the embedded submittedAnswer
+  exam.codingQuestion.submittedAnswer = {
     code,
     language,
-    status: "pending", // Initial status
-    executionTime: 0, // Will be updated after execution
+    status: "submitted", // Set status to submitted
+    submissionDate: new Date(), // Add submission date
   };
 
-  // Save the updated question
-  const updatedQuestion = await question.save();
+  // Save the updated exam
+  const updatedExam = await exam.save();
 
   res.status(200).json({
     success: true,
-    data: updatedQuestion,
+    data: updatedExam.codingQuestion, // Return the updated coding question part of the exam
   });
 });
 
@@ -128,12 +138,13 @@ const getCodingQuestion = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get coding questions by exam ID
+// @desc    Get coding question for a specific exam
 // @route   GET /api/coding/questions/exam/:examId
-// @access  Private
-const getCodingQuestionsByExamId = asyncHandler(async (req, res) => {
+// @access  Private (Student)
+const getExamCodingQuestion = asyncHandler(async (req, res) => {
   const { examId } = req.params;
-  console.log("Fetching question for examId:", examId);
+  console.log("getExamCodingQuestion - Received examId:", examId);
+  console.log("getExamCodingQuestion - Type of examId:", typeof examId);
 
   if (!examId) {
     res.status(400);
@@ -141,23 +152,28 @@ const getCodingQuestionsByExamId = asyncHandler(async (req, res) => {
   }
 
   try {
-    const question = await CodingQuestion.findOne({
-      examId: examId.toString(),
-    });
-    console.log("Found question:", question);
+    // Find the exam by its examId (UUID) field
+    const exam = await Exam.findOne({ examId });
+    console.log("getExamCodingQuestion - Exam query result:", exam);
 
-    if (!question) {
+    if (!exam) {
+      res.status(404);
+      throw new Error(`No exam found with ID: ${examId}`);
+    }
+
+    // Check if the exam has a coding question embedded
+    if (!exam.codingQuestion || !exam.codingQuestion.question) {
       res.status(404);
       throw new Error(`No coding question found for exam: ${examId}`);
     }
 
     res.status(200).json({
       success: true,
-      data: question,
+      data: exam.codingQuestion, // Return the embedded coding question
     });
   } catch (error) {
     console.error("Error fetching coding question:", error);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
       message: error.message,
       details: error.stack,
@@ -170,5 +186,5 @@ export {
   createCodingQuestion,
   getCodingQuestions,
   getCodingQuestion,
-  getCodingQuestionsByExamId,
+  getExamCodingQuestion,
 };

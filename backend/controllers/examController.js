@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Exam from "./../models/examModel.js";
 import Submission from "./../models/submissionModel.js";
+import Question from "./../models/quesModel.js";
 import mongoose from 'mongoose';
 
 // @desc Get all exams
@@ -187,19 +188,32 @@ const submitExam = asyncHandler(async (req, res) => {
     console.log('Resolved Exam ObjectId:', examObjectId);
     console.log('Student ID:', studentId);
 
-    // Process answers to ensure questionId is ObjectId
-    const processedAnswers = answers.map(answer => ({
-      ...answer,
-      questionId: answer.questionId, // Removed explicit casting
-    }));
-    console.log('Processed Answers:', processedAnswers);
+    // Fetch all questions for this exam using the UUID examId
+    const questions = await Question.find({ examId: examId });
+    const questionMap = new Map();
+    questions.forEach(q => {
+      questionMap.set(q._id.toString(), q);
+    });
 
-    // Basic score calculation (placeholder for actual logic)
     let score = 0;
-    // In a real application, you would fetch the correct answers from the exam
-    // and compare them with the submitted answers to calculate the score.
-    // For now, let's just assign a dummy score or base it on answer count.
-    score = processedAnswers.length * 10; // Dummy score: 10 points per answer
+    const processedAnswers = answers.map(answer => {
+      const question = questionMap.get(answer.questionId); // Ensure questionId is string for map lookup
+      let isCorrect = false;
+
+      if (question) {
+        const correctOption = question.options.find(opt => opt.isCorrect);
+        if (correctOption && correctOption._id.toString() === answer.selectedOption) {
+          isCorrect = true;
+          score += question.ansmarks > 0 ? question.ansmarks : 10; // Add question marks or default 10
+        }
+      }
+
+      return {
+        ...answer,
+        isCorrect,
+      };
+    });
+    console.log('Processed Answers:', processedAnswers);
 
     const submission = new Submission({
       examId: examObjectId,

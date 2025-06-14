@@ -47,7 +47,7 @@ export default function Coder() {
     const fetchCodingQuestion = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`/api/coding/questions/exam/${examId}`);
+        const response = await axios.get(`/api/coding/question/exam/${examId}`);
         if (response.data.success && response.data.data) {
           setQuestionId(response.data.data._id);
           setQuestion(response.data.data);
@@ -98,13 +98,14 @@ export default function Coder() {
   };
 
   const handleSubmit = async () => {
-    console.log('Starting submission with questionId:', questionId);
+    console.log('Starting coding submission for examId:', examId);
     console.log('Current code:', code);
     console.log('Selected language:', language);
     console.log('Current cheating log:', cheatingLog);
 
-    if (!questionId) {
-      toast.error('Question not loaded properly. Please try again.');
+    if (!examId) {
+      toast.error('Exam ID not loaded properly. Please try again.');
+      console.error('handleSubmit: examId is missing.');
       return;
     }
 
@@ -113,15 +114,15 @@ export default function Coder() {
       const codeSubmissionData = {
         code,
         language,
-        questionId,
+        examId,
       };
 
-      console.log('Submitting code with data:', codeSubmissionData);
+      console.log('Submitting coding code with data:', codeSubmissionData);
 
       const response = await axios.post('/api/coding/submit', codeSubmissionData, {
         withCredentials: true,
       });
-      console.log('Submission response:', response.data);
+      console.log('Coding submission response:', response.data);
 
       if (response.data.success) {
         try {
