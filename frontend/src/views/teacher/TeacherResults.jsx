@@ -18,6 +18,8 @@ import {
   TextField,
   MenuItem,
 } from '@mui/material';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from 'src/components/container/PageContainer';
 import DashboardCard from '../../components/shared/DashboardCard';
@@ -143,32 +145,33 @@ const TeacherResults = () => {
             <Button
               variant="contained"
               onClick={async () => {
-                const { jsPDF } = await import('jspdf');
-                await import('jspdf-autotable');
-                const doc = new jsPDF();
-                doc.text('Teacher Results', 14, 16);
-                const rows = filtered.map((s) => {
-                  const maxScore = (s.totalQuestions || 0) * 10;
-                  const pct = maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
-                  const statusText = s.status === 'auto_failed' ? 'Auto Submit' : 'Completed';
-                  return [
-                    s.studentName,
-                    s.studentEmail,
-                    s.examName,
-                    `${s.score}/${maxScore}`,
-                    `${pct}%`,
-                    statusText,
-                    s.hasCodingAnswer ? (s.codingLanguage || 'Yes') : 'No',
-                    new Date(s.submittedAt).toLocaleString(),
-                  ];
-                });
-                // @ts-ignore
-                doc.autoTable({
-                  head: [['Student', 'Email', 'Exam', 'Score', 'Percentage', 'Status', 'Coding', 'Submitted']],
-                  body: rows,
-                  startY: 22,
-                });
-                doc.save('teacher-results.pdf');
+                try {
+                  const doc = new jsPDF();
+                  doc.text('Teacher Results', 14, 16);
+                  const rows = filtered.map((s) => {
+                    const maxScore = (s.totalQuestions || 0) * 10;
+                    const pct = maxScore > 0 ? Math.round((s.score / maxScore) * 100) : 0;
+                    const statusText = s.status === 'auto_failed' ? 'Auto Submit' : 'Completed';
+                    return [
+                      s.studentName,
+                      s.studentEmail,
+                      s.examName,
+                      `${s.score}/${maxScore}`,
+                      `${pct}%`,
+                      statusText,
+                      s.hasCodingAnswer ? (s.codingLanguage || 'Yes') : 'No',
+                      new Date(s.submittedAt).toLocaleString(),
+                    ];
+                  });
+                  autoTable(doc, {
+                    head: [['Student', 'Email', 'Exam', 'Score', 'Percentage', 'Status', 'Coding', 'Submitted']],
+                    body: rows,
+                    startY: 22,
+                  });
+                  doc.save('teacher-results.pdf');
+                } catch (error) {
+                  console.error('Error generating PDF:', error);
+                }
               }}
             >
               Export PDF

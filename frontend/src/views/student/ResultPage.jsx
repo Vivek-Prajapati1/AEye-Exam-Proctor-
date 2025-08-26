@@ -8,6 +8,8 @@ import { useGetExamResultsQuery, useGetStudentExamResultQuery, useGetStudentStat
 import { Assignment as AssignmentIcon, TrendingUp as TrendingUpIcon, EmojiEvents as EmojiEventsIcon, Grade as GradeIcon } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { useGetCheatingLogsQuery } from 'src/slices/cheatingLogApiSlice';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ResultPage = () => {
   const { examId, studentId: studentIdFromUrl } = useParams();
@@ -303,17 +305,22 @@ const ResultPage = () => {
             </Button>
 
             <Button variant="contained" onClick={async () => {
-              const { jsPDF } = await import('jspdf');
-              await import('jspdf-autotable');
-              const doc = new jsPDF();
-              doc.text('My Exam Results', 14, 16);
-              const rows = filteredList.map((s) => {
-                const pct = Math.round((s.score / (s.totalQuestions * 10)) * 100);
-                return [s.examName, `${s.score}`, `${s.totalQuestions}`, `${pct}%`, s.codingSubmitted ? (s.codingLanguage || 'Yes') : 'No', new Date(s.submittedAt).toLocaleString()];
-              });
-              // @ts-ignore
-              doc.autoTable({ head: [['Exam', 'Score', 'Questions', 'Percentage', 'Coding', 'Date']], body: rows, startY: 22 });
-              doc.save('my-results.pdf');
+              try {
+                const doc = new jsPDF();
+                doc.text('My Exam Results', 14, 16);
+                const rows = filteredList.map((s) => {
+                  const pct = Math.round((s.score / (s.totalQuestions * 10)) * 100);
+                  return [s.examName, `${s.score}`, `${s.totalQuestions}`, `${pct}%`, s.codingSubmitted ? (s.codingLanguage || 'Yes') : 'No', new Date(s.submittedAt).toLocaleString()];
+                });
+                autoTable(doc, { 
+                  head: [['Exam', 'Score', 'Questions', 'Percentage', 'Coding', 'Date']], 
+                  body: rows, 
+                  startY: 22 
+                });
+                doc.save('my-results.pdf');
+              } catch (error) {
+                console.error('Error generating PDF:', error);
+              }
             }}>Export PDF</Button>
 
 
@@ -538,20 +545,24 @@ const ResultPage = () => {
               <MenuItem value="failed">Failed</MenuItem>
             </TextField>
             <Button variant="contained" onClick={async () => {
-              const { jsPDF } = await import('jspdf');
-              await import('jspdf-autotable');
-              const doc = new jsPDF();
-              doc.text('Exam Results', 14, 16);
-              const rows = filteredResults.map((r) => {
-                const maxScore = (r.examDetails?.totalQuestions || 0) * 10;
-                const pct = maxScore > 0 ? Math.round((r.score / maxScore) * 100) : 0;
-                return [r.studentId?.name, r.studentId?.email, r.score, `${pct}%`, new Date(r.createdAt).toLocaleString()];
-              });
-              // @ts-ignore
-              doc.autoTable({ head: [['Student', 'Email', 'Score', 'Percentage', 'Submitted At']], body: rows, startY: 22 });
-              doc.save('exam-results.pdf');
+              try {
+                const doc = new jsPDF();
+                doc.text('Exam Results', 14, 16);
+                const rows = filteredResults.map((r) => {
+                  const maxScore = (r.examDetails?.totalQuestions || 0) * 10;
+                  const pct = maxScore > 0 ? Math.round((r.score / maxScore) * 100) : 0;
+                  return [r.studentId?.name, r.studentId?.email, r.score, `${pct}%`, new Date(r.createdAt).toLocaleString()];
+                });
+                autoTable(doc, { 
+                  head: [['Student', 'Email', 'Score', 'Percentage', 'Submitted At']], 
+                  body: rows, 
+                  startY: 22 
+                });
+                doc.save('exam-results.pdf');
+              } catch (error) {
+                console.error('Error generating PDF:', error);
+              }
             }}>Export PDF</Button>
-
           </Stack>
         }>
           {filteredResults.length === 0 ? (

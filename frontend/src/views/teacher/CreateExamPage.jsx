@@ -75,11 +75,14 @@ const CreateExamPage = () => {
     validationSchema: examValidationSchema,
     onSubmit: async (values) => {
       try {
+        console.log('Form submission values:', values); // Debug log
         let examResponse;
         if (examId) {
+          console.log('Updating exam with values:', { examId, ...values }); // Debug log
           examResponse = await updateExam({ examId, ...values }).unwrap();
           toast.success('Exam updated successfully!');
         } else {
+          console.log('Creating exam with values:', values); // Debug log
           examResponse = await createExam(values).unwrap();
           toast.success('Exam created successfully!');
         }
@@ -126,6 +129,7 @@ const CreateExamPage = () => {
         examName: examData.examName,
         totalQuestions: examData.totalQuestions,
         duration: examData.duration,
+        maxAttempts: examData.maxAttempts || 1,
         liveDate: examData.liveDate ? new Date(examData.liveDate).toISOString().slice(0, 16) : '',
         deadDate: examData.deadDate ? new Date(examData.deadDate).toISOString().slice(0, 16) : '',
         codingQuestions: examData.codingQuestions && examData.codingQuestions.length > 0 

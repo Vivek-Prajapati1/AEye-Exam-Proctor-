@@ -67,7 +67,7 @@ const getExamById = asyncHandler(async (req, res) => {
 // @route POST /api/exams
 // @access Private (admin)
 const createExam = asyncHandler(async (req, res) => {
-  const { examName, totalQuestions, duration, liveDate, deadDate, codingQuestions, codingQuestion } = req.body;
+  const { examName, totalQuestions, duration, maxAttempts, liveDate, deadDate, codingQuestions, codingQuestion } = req.body;
 
   // Handle backward compatibility - convert single codingQuestion to array
   let finalCodingQuestions = codingQuestions;
@@ -79,6 +79,7 @@ const createExam = asyncHandler(async (req, res) => {
     examName,
     totalQuestions,
     duration,
+    maxAttempts: maxAttempts || 1, // Default to 1 if not provided
     liveDate,
     deadDate,
     codingQuestions: finalCodingQuestions,
@@ -99,7 +100,7 @@ const createExam = asyncHandler(async (req, res) => {
 // @route PUT /api/exams/exam/:examId
 // @access Private (teacher/admin)
 const updateExam = asyncHandler(async (req, res) => {
-  const { examName, totalQuestions, duration, liveDate, deadDate, codingQuestions, codingQuestion } = req.body;
+  const { examName, totalQuestions, duration, maxAttempts, liveDate, deadDate, codingQuestions, codingQuestion } = req.body;
   const paramExamId = req.params.examId;
   let exam = null;
 
@@ -129,6 +130,7 @@ const updateExam = asyncHandler(async (req, res) => {
     exam.examName = examName || exam.examName;
     exam.totalQuestions = totalQuestions || exam.totalQuestions;
     exam.duration = duration || exam.duration;
+    exam.maxAttempts = maxAttempts !== undefined ? maxAttempts : exam.maxAttempts;
     exam.liveDate = liveDate || exam.liveDate;
     exam.deadDate = deadDate || exam.deadDate;
     
