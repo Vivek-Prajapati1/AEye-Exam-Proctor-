@@ -30,6 +30,12 @@ const Menuitems = (role) => {
       navlabel: true,
       subheader: 'Student',
     },
+        {
+      id: uniqueId(),
+      title: 'Student Dashboard',
+      icon: IconTypography,
+      href: '/student/dashboard',
+    },
     {
       id: uniqueId(),
       title: 'Exams',
@@ -42,6 +48,7 @@ const Menuitems = (role) => {
       icon: IconCopy,
       href: '/result', // Will be adjusted in SidebarItems if examId exists
     },
+    
   ];
 
   const teacherItems = [

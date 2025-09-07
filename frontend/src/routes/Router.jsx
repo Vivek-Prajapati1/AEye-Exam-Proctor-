@@ -27,6 +27,7 @@ const ExamDetails = Loadable(lazy(() => import('./../views/student/ExamDetails')
 const CodeDetails = Loadable(lazy(() => import('../views/student/CodeDetails')));
 const ResultPage = Loadable(lazy(() => import('./../views/student/ResultPage')));
 const Coder = Loadable(lazy(() => import('../views/student/Coder')));
+const StudentDashboard = Loadable(lazy(() => import('../views/student/StudentDashboard')));
 //Auth Routes
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 const Register = Loadable(lazy(() => import('../views/authentication/Register')));
@@ -57,6 +58,7 @@ const Router = createBrowserRouter(
           <Route path="/sample-page" exact={true} element={<SamplePage />} />
           <Route path="/Success" exact={true} element={<Success />} />
           <Route path="/exam" exact={true} element={<ExamPage />} />
+          <Route path="/student/dashboard" exact={true} element={<StudentDashboard />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/result/:examId" exact={true} element={<ResultPage />} />
           <Route path="" element={<TeacherRoute />}>

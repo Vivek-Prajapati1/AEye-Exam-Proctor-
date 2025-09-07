@@ -11,9 +11,6 @@ import 'react-toastify/dist/ReactToastify.css';
 // Cheating Log Provider
 import { CheatingLogProvider } from './context/CheatingLogContext';
 
-import StudentDashboard from "./views/student/StudentDashboard";
-
-
 // Redux Provider
 import { Provider } from 'react-redux';
 import store from './store';
@@ -30,8 +27,6 @@ function App() {
         </CheatingLogProvider>
       </Provider>
     </ThemeProvider>
-
-    
   );
 }
 
